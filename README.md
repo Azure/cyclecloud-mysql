@@ -1,14 +1,22 @@
-# Project
+# Cyclecloud Mysql
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+Purpose of this project is to provide a convenient way to set up a mysql database used for HPC environments, primarily for scheduler based job accounting such as slurm job accounting.
 
-As the maintainer of this project, please make a few updates:
+This project is NOT meant to be used in production environments for the following reasons:
+- It does not support HA
+- It does not have any workload based autoscaling
+- It does not use TLS 1.2 which is recommended for securing production environments.
+- It does not do any automatic archiving/purging. User is responsible for managing their data if the disk is full.
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+For that reason, public IP address is disabled on this project.
+For production environments, users should use [Azure MySQL](https://learn.microsoft.com/en-us/azure/mysql/flexible-server/overview).
+This project is only meant for prototyping and use in dev environments.
+
+## What this does
+
+This sets up a simple basic VM with mysql DB and makes it use the block device for storage. It applies basic minimal configuration to get the SQL server up and running in cyclecloud environment.
+
+The database can then be used for 1 or more slurm clusters for job accounting.
 
 ## Contributing
 

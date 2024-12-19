@@ -1,0 +1,180 @@
+
+################################
+## MySQL Server Template ##
+################################
+
+[cluster mysql]
+IconUrl = static/cloud/cluster/ui/ClusterIcon/mysql.png
+FormLayout = selectionpanel
+Category = Database
+
+    [[node defaults]]
+
+    Credentials = $Credentials    
+    ImageName = $ImageName
+    SubnetId = $SubnetId
+    Region = $Region
+    KeyPairLocation = ~/.ssh/cyclecloud.pem
+    Azure.Identities = $ManagedIdentity
+
+        [[[configuration]]]
+        # May be used to identify the ID in cluster-init scripts
+        cluster.identities.default = $ManagedIdentity
+
+
+    [[node Database]]
+    MachineType = $MachineType
+    IsReturnProxy = $ReturnProxy
+
+    AdditionalClusterInitSpecs = $FileServerClusterInitSpecs
+
+
+        [[[configuration]]]
+        cyclecloud.discoverable = true
+        role = sharedfs
+        database.user = $DatabaseUser
+        database.password = $DatabasePassword
+
+        [[[volume boot]]]
+        Size = ${ifThenElse(BootDiskSize > 0, BootDiskSize, undefined)}
+        SSD = True
+
+
+        [[[volume mysql-vol1]]]
+        Size = $FilesystemSize
+        SSD = True
+        Mount = db
+        Persistent = true
+
+        [[[configuration cyclecloud.mounts.db]]]
+        mountpoint = /data
+        fs_type = ext4
+
+        [[[cluster-init mysql:default:1.0.0]]]
+
+        [[[network-interface eth0]]]
+        AssociatePublicIpAddress = false
+
+
+
+
+[parameters About]
+Order = 1
+
+    [[parameters About mysql]]
+
+        [[[parameter Database]]]
+        HideLabel = true
+        Config.Plugin = pico.widget.HtmlTemplateWidget
+        Config.Template := "<table role=\"presentation\"><tr><td><img alt=\"mysql logo\" src='https://github.com/azure/cyclecloud-mysql/raw/master/mysql.png' width='192' height='192'></td></tr><tr><td><p>Creates a basic, single-node Mysql Database VM .</p></td></tr></table>"
+
+        [[[parameter Readme]]]
+        HideLabel = true
+        Config.Plugin = pico.widget.HtmlTemplateWidget
+        Config.Template := "<b>Please Note: This project is meant for ease of deployments for non-production clusters to get a working scheduler database. This project does not provide workload based autoscaling. You are responsible for periodically purging/archiving your databases if the disk is full. Additionally this project does not use TLS 1.2 which is highly recommended for production workloads. For that reason public IP is disabled on this project. Please do not use this for production environments. Our recommendation for production environments is to use <a href=\"https://learn.microsoft.com/en-us/azure/mysql/flexible-server/overview\" target=\"_blank\">Azure Mysql</a><b>. Follow the instructions in the <a href=\"https://github.com/azure/cyclecloud-mysql/\" target=\"_blank\">README</a> for details on instructions on extending and configuring the Project for your environment."
+
+
+[parameters Required Settings]
+Order = 10
+
+    [[parameters Virtual Machines ]]
+    Description = "Virtual Machine to use for mysql Database"
+    Order = 20
+
+
+        [[[parameter Region]]]
+        Label = Region
+        Description = Deployment Location
+        ParameterType = Cloud.Region
+
+        [[[parameter MachineType]]]
+        Label = mysql Machine Type
+        Description = The machine type for the mysql Server host
+        ParameterType = Cloud.MachineType
+        DefaultValue = Standard_D4ads_v5
+
+
+    [[parameters Networking]]
+    Order = 40
+
+        [[[parameter SubnetId]]]
+        Label = Subnet ID
+        Description = Subnet Resource Path (ResourceGroup/VirtualNetwork/Subnet)
+        ParameterType = Azure.Subnet
+        Required = True
+
+
+[parameters Advanced Settings]
+Order = 20
+
+    [[parameters Azure Settings]]
+    Order = 10 
+
+        [[[parameter Credentials]]]
+        Description = The credentials for the cloud provider
+        ParameterType = Cloud.Credentials
+
+        [[[parameter ManagedIdentity]]]
+        Label = Managed Id
+        Description = Optionally assign an Azure user assigned managed identity to all nodes to access Azure resources using assigned roles.
+        ParameterType = Azure.ManagedIdentity
+        DefaultValue = =undefined
+
+        [[[parameter BootDiskSize]]]
+        Description = Optional: Size of the OS/boot disk in GB for all nodes in the cluster (leave at 0 to use Image size)
+        ParameterType = Integer
+        Config.Plugin = pico.form.NumberTextBox
+        Config.MinValue = 0
+        Config.MaxValue = 32,000
+        Config.IntegerOnly = true
+        Config.Increment = 64
+        DefaultValue = 0
+
+    [[parameters Database Configuration]]
+	HideLabel = true
+	Config.Plugin = pico.widget.HtmlTemplateWidget
+
+        [[[parameter FilesystemSize]]]
+        Label = Size (GB)
+        Description = The filesystem size
+        DefaultValue = 150
+        Config.Plugin = pico.form.NumberTextBox
+        Config.MinValue = 10
+        Config.MaxValue = 10240
+        Config.IntegerOnly = true
+
+        [[[parameter DatabaseUser]]]
+        Label = Database User
+        Description = Database Admin User
+
+        [[[parameter DatabasePassword]]]
+        Label = Database Password
+        Description = Password for Database admin
+        ParameterType = Password
+
+    [[parameters Software]]
+    Description = "Specify the scheduling software, and base OS installed on all nodes, and optionally the cluster-init and chef versions from your Locker."
+    Order = 10
+
+        [[[parameter ImageName]]]
+        Config.Template := "<table role=\"presentation\"><tr><td> <b>Note: Ubuntu 22 is the recommended image. </b></td></tr></table>"
+        Label = Base OS
+        ParameterType = Cloud.Image
+        Config.OS = linux
+        DefaultValue = cycle.image.ubuntu22
+
+        [[[parameter FileServerClusterInitSpecs]]]
+        Label = FileServerClusterInitSpecs
+        Description = Cluster init specs to apply to the file server
+        ParameterType = Cloud.ClusterInitSpecs
+
+
+    [[parameters Advanced Networking]]
+    Description = Advanced networking settings
+
+        [[[parameter ReturnProxy]]]
+        Label = Return Proxy
+        DefaultValue = true
+        ParameterType = Boolean
+        Config.Label = Use SSH tunnel to connect to CycleCloud (required if direct access is blocked)
+
