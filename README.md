@@ -18,6 +18,19 @@ This sets up a simple basic VM with mysql DB and makes it use the block device f
 
 The database can then be used for 1 or more slurm clusters for job accounting.
 
+## How to use it
+
+To use this project:
+
+1. Clone this git repo
+2. If you have "cyclecloud" CLI installed, then from the root of the repo run `cyclecloud project upload <storageaccount>`
+    - if you do not have `cyclecloud` CLI installed, then follow the process to [Install Cyclecloud CLI](https://learn.microsoft.com/en-us/azure/cyclecloud/how-to/install-cyclecloud-cli?view=cyclecloud-8)
+3. Import the template. Run `cyclecloud import_template -f templates/mysql.txt -c mysql mysql`
+4. From your cyclecloud new cluster creation page, follow the Cluster creation icon for "mysql" under "Database" section. 
+    - The UI for mysql DB creation will ask for user name, and password.
+    - Its recommended to not change attributes such as the image.
+
+
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
