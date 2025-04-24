@@ -161,7 +161,7 @@ Order = 20
         Label = Base OS
         ParameterType = Cloud.Image
         Config.OS = linux
-        DefaultValue = cycle.image.ubuntu22
+        DefaultValue = Canonical:ubuntu-24_04-lts:server:latest
 
         [[[parameter FileServerClusterInitSpecs]]]
         Label = FileServerClusterInitSpecs
