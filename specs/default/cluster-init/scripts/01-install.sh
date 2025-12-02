@@ -11,6 +11,6 @@ fi
 mkdir -p $DATADIR/mysql
 # Set Correct Permissions
 chown -R mysql:mysql $DATADIR/mysql
-
+chmod 750 $DATADIR/mysql
 /usr/sbin/mysqld --initialize-insecure --user=mysql --datadir=$DATADIR/mysql
 systemctl start mysql
